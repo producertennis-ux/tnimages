@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tennis Image Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Farsan&family=Poppins:wght@500;800&family=Tomorrow:wght@400;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .dropzone-active {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+        .swatch {
+            transition: transform 0.1s ease-in-out;
+        }
+        .swatch:hover {
+            transform: scale(1.1);
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0.25rem; }
+        .spinner {
+            border-top-color: #3498db;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-5xl bg-white rounded-xl shadow-lg p-6 md:p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-slate-800">Tennis Image Generator</h1>
+            <p class="text-slate-500 mt-2">Design your background, select players, and generate a high-res image.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <!-- Left Column: Logo and Text -->
+            <div class="flex flex-col gap-6">
+                <!-- Step 1: Logo Upload -->
+                <div id="logo-upload-wrapper" class="flex flex-col">
+                    <label class="font-semibold text-slate-700 mb-2">Step 1: Upload Your Logo (Optional)</label>
+                    <div id="dropzone" class="relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div id="dropzone-prompt" class="flex flex-col items-center justify-center pt-5 pb-6 text-center">
+                            <svg class="w-8 h-8 mb-4 text-slate-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                            </svg>
+                            <p class="mb-2 text-sm text-slate-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                            <p class="text-xs text-slate-500">PNG, JPG, SVG, or WEBP</p>
+                        </div>
+                        <img id="logo-preview" src="" class="hidden absolute h-full w-full object-contain p-4" alt="Logo Preview"/>
+                        <input id="file-upload" type="file" class="hidden" accept="image/png, image/jpeg, image/svg+xml, image/webp" />
+                    </div>
+                    <div id="file-error" class="text-red-500 text-sm mt-2 hidden"></div>
+                </div>
+
+                <!-- Step 2: Custom Text -->
+                <div class="flex flex-col gap-4">
+                     <div>
+                        <label for="header-text-input" class="font-semibold text-slate-700 mb-2 block">Step 2: Add Header Text (Optional)</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="header-text-input" value="FULL MATCH" class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            <input type="color" id="header-text-color-picker" value="#FFFFFF" class="p-0 h-10 w-12 block bg-white border border-slate-300 rounded-md cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Background and Players -->
+            <div class="flex flex-col gap-6">
+                <!-- Step 3: Background Design -->
+                <div>
+                    <label class="font-semibold text-slate-700 mb-2">Step 3: Design Background</label>
+                    <p class="text-sm text-slate-500 mb-4">Customize the colors for the diagonal split background.</p>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div id="color-1-wrapper">
+                            <label for="hex-input-1" class="text-sm text-slate-600 font-medium mb-2 block">Color 1 (Left):</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="color-picker-1" value="#000000" class="p-0 h-10 w-12 block bg-white border border-slate-300 rounded-md cursor-pointer">
+                                <input type="text" id="hex-input-1" value="#000000" maxlength="7" class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            </div>
+                        </div>
+                        <div id="color-2-wrapper">
+                            <label for="hex-input-2" class="text-sm text-slate-600 font-medium mb-2 block">Color 2 (Right):</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="color-picker-2" value="#FFFFFF" class="p-0 h-10 w-12 block bg-white border border-slate-300 rounded-md cursor-pointer">
+                                <input type="text" id="hex-input-2" value="#FFFFFF" maxlength="7" class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4" id="presets-1-wrapper">
+                        <p class="text-sm text-slate-600 mb-2">Presets (sets Color 1):</p>
+                        <div class="flex flex-wrap gap-2">
+                            <div class="swatch w-8 h-8 rounded-full cursor-pointer border border-slate-200" style="background-color: #4d7d4b" data-color="#4d7d4b"></div>
+                            <div class="swatch w-8 h-8 rounded-full cursor-pointer border border-slate-200" style="background-color: #616161" data-color="#616161"></div>
+                            <div class="swatch w-8 h-8 rounded-full cursor-pointer border border-slate-200" style="background-color: #d37d16" data-color="#d37d16"></div>
+                            <div class="swatch w-8 h-8 rounded-full cursor-pointer border border-slate-200" style="background-color: #678794" data-color="#678794"></div>
+                            <div class="swatch w-8 h-8 rounded-full cursor-pointer border border-slate-200" style="background-color: #FACC15" data-color="#FACC15"></div>
+                        </div>
+                    </div>
+                    <div class="mt-4" id="presets-2-wrapper">
+                        <p class="text-sm text-slate-600 mb-2">Presets (sets Color 2):</p>
+                        <div class="flex flex-wrap gap-2">
+                           <div class="swatch w-8 h-8 rounded-full cursor-pointer border border-slate-200" style="background-color: #4d7d4b" data-color="#4d7d4b"></div>
+                           <div class="swatch w-8 h-8 rounded-full cursor-pointer border border-slate-200" style="background-color: #616161" data-color="#616161"></div>
+                           <div class="swatch w-8 h-8 rounded-full cursor-pointer border border-slate-200" style="background-color: #d37d16" data-color="#d37d16"></div>
+                           <div class="swatch w-8 h-8 rounded-full cursor-pointer border border-slate-200" style="background-color: #678794" data-color="#678794"></div>
+                           <div class="swatch w-8 h-8 rounded-full cursor-pointer border border-slate-200" style="background-color: #FACC15" data-color="#FACC15"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Player Selection -->
+                <div id="player-select-wrapper">
+                     <div class="flex items-center justify-between border-t pt-6 mt-6">
+                          <label class="font-semibold text-slate-700">Step 4: Select Players</label>
+                          <div class="flex items-center">
+                              <input type="checkbox" id="doubles-checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                              <label for="doubles-checkbox" class="ml-2 text-sm text-slate-700 font-medium">Doubles</label>
+                          </div>
+                      </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label for="player1-search" class="text-sm font-medium text-slate-600 mb-1 block">Player 1</label>
+                            <input type="text" id="player1-search" placeholder="Search Player 1..." class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm mb-2">
+                            <select id="player1-select" class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">Loading players...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="player2-search" class="text-sm font-medium text-slate-600 mb-1 block">Player 2</label>
+                             <input type="text" id="player2-search" placeholder="Search Player 2..." class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm mb-2">
+                            <select id="player2-select" class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">Loading players...</option>
+                            </select>
+                        </div>
+                    </div>
+                     <div id="doubles-players-wrapper" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 hidden">
+                         <div>
+                            <label for="player3-search" class="text-sm font-medium text-slate-600 mb-1 block">Player 3</label>
+                            <input type="text" id="player3-search" placeholder="Search Player 3..." class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm mb-2">
+                            <select id="player3-select" class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">Select Player 3</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="player4-search" class="text-sm font-medium text-slate-600 mb-1 block">Player 4</label>
+                             <input type="text" id="player4-search" placeholder="Search Player 4..." class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm mb-2">
+                            <select id="player4-select" class="w-full px-3 py-2 text-slate-700 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">Select Player 4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="player-loading-error" class="text-red-500 text-sm mt-1 hidden">Could not load player data from ATP/WTA.</div>
+                     <div id="player-images-preview" class="grid grid-cols-2 gap-4 mt-4">
+                        <img id="player1-preview" src="https://placehold.co/300x200/e2e8f0/e2e8f0?text=." class="w-full h-auto object-cover rounded-md bg-slate-100 aspect-[3/2]" alt="Player 1 Preview"/>
+                        <img id="player2-preview" src="https://placehold.co/300x200/e2e8f0/e2e8f0?text=." class="w-full h-auto object-cover rounded-md bg-slate-100 aspect-[3/2]" alt="Player 2 Preview"/>
+                    </div>
+                    <div id="doubles-preview-wrapper" class="grid grid-cols-2 gap-4 mt-2 hidden">
+                        <img id="player3-preview" src="https://placehold.co/300x200/e2e8f0/e2e8f0?text=." class="w-full h-auto object-cover rounded-md bg-slate-100 aspect-[3/2]" alt="Player 3 Preview"/>
+                        <img id="player4-preview" src="https://placehold.co/300x200/e2e8f0/e2e8f0?text=." class="w-full h-auto object-cover rounded-md bg-slate-100 aspect-[3/2]" alt="Player 4 Preview"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center">
+             <button id="generate-btn" class="w-full md:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 disabled:bg-slate-300 disabled:cursor-not-allowed disabled:scale-100">
+                  Generate Image
+             </button>
+        </div>
+
+        <div id="output-section" class="mt-10 hidden">
+            <div class="flex justify-between items-center mb-4 border-t pt-6">
+                <h2 class="text-2xl font-bold text-slate-800">Your Image</h2>
+            </div>
+            <div id="image-grid" class="grid grid-cols-1 gap-6">
+            </div>
+            <div id="loading-spinner" class="text-center p-8 hidden">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <p class="mt-4 text-slate-600">Generating your image...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION ---
+            const CORS_PROXY_URL = 'https://corsproxy.io/?';
+            const ATP_RANKINGS_URL = `${CORS_PROXY_URL}https://www.atptour.com/en/rankings/singles?rankRange=0-5000`;
+            const WTA_RANKINGS_URL = `${CORS_PROXY_URL}https://www.wtatennis.com/rankings/singles`;
+
+            // --- DOM Element Selectors ---
+            const generateBtn = document.getElementById('generate-btn');
+            const dropzone = document.getElementById('dropzone');
+            const fileUpload = document.getElementById('file-upload');
+            const logoPreview = document.getElementById('logo-preview');
+            const dropzonePrompt = document.getElementById('dropzone-prompt');
+            const fileError = document.getElementById('file-error');
+            const doublesCheckbox = document.getElementById('doubles-checkbox');
+            const doublesPlayersWrapper = document.getElementById('doubles-players-wrapper');
+            const doublesPreviewWrapper = document.getElementById('doubles-preview-wrapper');
+            const playerSelects = [document.getElementById('player1-select'), document.getElementById('player2-select'), document.getElementById('player3-select'), document.getElementById('player4-select')];
+            const playerSearches = [document.getElementById('player1-search'), document.getElementById('player2-search'), document.getElementById('player3-search'), document.getElementById('player4-search')];
+            const playerPreviews = [document.getElementById('player1-preview'), document.getElementById('player2-preview'), document.getElementById('player3-preview'), document.getElementById('player4-preview')];
+            const playerLoadingError = document.getElementById('player-loading-error');
+            const headerTextInput = document.getElementById('header-text-input');
+            const headerTextColorPicker = document.getElementById('header-text-color-picker');
+            const outputSection = document.getElementById('output-section');
+            const imageGrid = document.getElementById('image-grid');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const colorPicker1 = document.getElementById('color-picker-1');
+            const hexInput1 = document.getElementById('hex-input-1');
+            const colorPicker2 = document.getElementById('color-picker-2');
+            const hexInput2 = document.getElementById('hex-input-2');
+            const presets1Wrapper = document.getElementById('presets-1-wrapper');
+            const presets2Wrapper = document.getElementById('presets-2-wrapper');
+            const swatches1 = presets1Wrapper.querySelectorAll('.swatch');
+            const swatches2 = presets2Wrapper.querySelectorAll('.swatch');
+            
+            // --- State & Constants ---
+            let uploadedLogo = null;
+            let playersData = [];
+            const SIZES = [{ width: 3840, height: 2160 }];
+
+            // --- Player Data Fetching ---
+            async function fetchAtpPlayers() {
+                try {
+                    const response = await fetch(ATP_RANKINGS_URL);
+                    if (!response.ok) throw new Error('ATP network response was not ok');
+                    const htmlText = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    const players = [];
+
+                    // Selector based on the new HTML you provided.
+                    let playerRows = doc.querySelectorAll('tr.lower-row');
+
+                    // Fallback for other potential ATP page layouts.
+                    if (playerRows.length === 0) {
+                        playerRows = doc.querySelectorAll('#rankingsTable tbody tr, .mega-table .mega-table-row');
+                    }
+
+                    playerRows.forEach(row => {
+                        let name, playerLink, flagUrl, playerId;
+
+                        // Logic for the 'lower-row' structure you provided.
+                        if (row.matches('tr.lower-row')) {
+                            const nameEl = row.querySelector('li.name a span');
+                            const linkEl = row.querySelector('li.name a');
+                            const flagUseEl = row.querySelector('li.avatar use');
+                            if (nameEl && linkEl && flagUseEl) {
+                                name = nameEl.innerText.trim();
+                                playerLink = linkEl.getAttribute('href');
+                                const flagHref = flagUseEl.getAttribute('href');
+                                const countryCode = flagHref.split('-').pop();
+                                if(countryCode) flagUrl = `https://www.atptour.com/-/media/images/flags/${countryCode}.svg`;
+                            }
+                        } 
+                        // Logic for the fallback structures.
+                        else {
+                            const nameEl = row.querySelector('.player-cell a, .player-name-col a');
+                            const flagEl = row.querySelector('.country-cell img, .country-item img');
+                            if (nameEl && flagEl) {
+                                name = nameEl.innerText.trim();
+                                playerLink = nameEl.getAttribute('href');
+                                flagUrl = flagEl.src;
+                            }
+                        }
+
+                        if (name && playerLink && flagUrl) {
+                            const linkParts = playerLink.split('/');
+                            if (linkParts.length > 4) {
+                                playerId = linkParts[4];
+                                const imageUrl = `https://www.atptour.com/-/media/alias/player-gladiator-headshot/${playerId}`;
+                                players.push({ name, imageUrl, flagUrl, tour: 'ATP' });
+                            }
+                        }
+                    });
+
+                    console.log(`Found ${players.length} ATP players.`);
+                    return players;
+                } catch (error) {
+                    console.error("Failed to fetch ATP player data:", error);
+                    return [];
+                }
+            }
+            
+            async function fetchWtaPlayers() {
+                try {
+                    const response = await fetch(WTA_RANKINGS_URL);
+                    if (!response.ok) throw new Error('WTA network response was not ok');
+                    const htmlText = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    const players = [];
+
+                    // Primary selector based on the new WTA HTML structure you provided.
+                    const playerItems = doc.querySelectorAll('.players-list__item');
+
+                    playerItems.forEach(item => {
+                        const nameEl = item.querySelector('h3.players-list__name');
+                        const imgEl = item.querySelector('.players-list__image img');
+                        const flagEl = item.querySelector('.flag__img');
+
+                        if (nameEl && imgEl && flagEl) {
+                            const name = nameEl.textContent.trim();
+                            const imageUrl = imgEl.src; 
+                            let flagUrl = flagEl.getAttribute('src');
+                            if (flagUrl && !flagUrl.startsWith('http')) {
+                                flagUrl = `https://www.wtatennis.com${flagUrl}`;
+                            }
+                            
+                            if(name && imageUrl && flagUrl) {
+                                players.push({ name, imageUrl, flagUrl, tour: 'WTA' });
+                            }
+                        }
+                    });
+                    
+                    // Fallback to an older known structure if the primary one fails.
+                    if (players.length === 0) {
+                        const playerRows = doc.querySelectorAll('.table-component__row');
+                        playerRows.forEach(row => {
+                           const nameEl = row.querySelector('.player-name__full-name');
+                           const flagEl = row.querySelector('.flag__img');
+                           const linkEl = row.querySelector('a');
+
+                           if (nameEl && flagEl && linkEl) {
+                               const name = nameEl.textContent.trim();
+                               let flagUrl = flagEl.getAttribute('src');
+                               if (flagUrl && !flagUrl.startsWith('http')) {
+                                   flagUrl = `https://www.wtatennis.com${flagUrl}`;
+                               }
+                               
+                               const playerLink = linkEl.getAttribute('href');
+                               const linkParts = playerLink.split('/');
+                                if (linkParts.length > 2) {
+                                   const playerId = linkParts[2];
+                                   const imageUrl = `https://wta-player-images.s3.amazonaws.com/generated/headshots/${playerId}.png`;
+                                   players.push({ name, imageUrl, flagUrl, tour: 'WTA' });
+                               }
+                           }
+                       });
+                    }
+
+                    console.log(`Found ${players.length} WTA players.`);
+                    return players;
+                } catch (error) {
+                    console.error("Failed to fetch WTA player data:", error);
+                    return [];
+                }
+            }
+
+            async function fetchAllPlayers() {
+                const [atpPlayers, wtaPlayers] = await Promise.all([
+                    fetchAtpPlayers(),
+                    fetchWtaPlayers()
+                ]);
+
+                if (atpPlayers.length === 0 && wtaPlayers.length === 0) {
+                    playerLoadingError.classList.remove('hidden');
+                    playerSelects.forEach(sel => sel.innerHTML = '<option value="">Error loading data</option>');
+                    return;
+                }
+                
+                playersData = [...atpPlayers, ...wtaPlayers];
+                playersData.sort((a, b) => a.name.localeCompare(b.name));
+                populateDropdowns();
+            }
+
+            function populateDropdowns() {
+                playerSelects.forEach((sel, index) => {
+                    sel.innerHTML = `<option value="">Select Player ${index + 1}</option>`;
+                    playersData.forEach(player => {
+                         sel.add(new Option(`${player.name} (${player.tour})`, player.name));
+                    });
+                });
+            }
+
+            // --- File Upload Logic ---
+            dropzone.addEventListener('click', () => fileUpload.click());
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => dropzone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }));
+            ['dragenter', 'dragover'].forEach(eventName => dropzone.addEventListener(eventName, () => dropzone.classList.add('dropzone-active')));
+            ['dragleave', 'drop'].forEach(eventName => dropzone.addEventListener(eventName, () => dropzone.classList.remove('dropzone-active')));
+            dropzone.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+            fileUpload.addEventListener('change', e => handleFile(e.target.files[0]));
+
+            function handleFile(file) {
+                fileError.classList.add('hidden');
+                uploadedLogo = null;
+                if (!file || !file.type.startsWith('image/')) {
+                    fileError.textContent = 'Please select a valid image file.';
+                    fileError.classList.remove('hidden');
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const img = new Image();
+                        img.onload = () => {
+                            uploadedLogo = img;
+                            logoPreview.src = e.target.result;
+                            logoPreview.classList.remove('hidden');
+                            dropzonePrompt.classList.add('hidden');
+                            updateGenerateButtonState();
+                        };
+                        img.onerror = () => {
+                            fileError.textContent = 'Could not load the image file.';
+                            fileError.classList.remove('hidden');
+                        }
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+                updateGenerateButtonState();
+            }
+            
+            // --- General Event Listeners ---
+            function setupAutoUpper(inputElement) {
+                inputElement.addEventListener('input', (e) => {
+                    const start = e.target.selectionStart;
+                    e.target.value = e.target.value.toUpperCase();
+                    e.target.setSelectionRange(start, start);
+                });
+            }
+            setupAutoUpper(headerTextInput);
+
+            doublesCheckbox.addEventListener('change', () => {
+                const isChecked = doublesCheckbox.checked;
+                doublesPlayersWrapper.classList.toggle('hidden', !isChecked);
+                doublesPreviewWrapper.classList.toggle('hidden', !isChecked);
+                if (!isChecked) {
+                    playerSelects[2].value = '';
+                    playerSelects[3].value = '';
+                    playerSelects[2].dispatchEvent(new Event('change'));
+                    playerSelects[3].dispatchEvent(new Event('change'));
+                }
+                updateGenerateButtonState();
+            });
+
+            playerSelects.forEach((select, index) => {
+                select.addEventListener('change', () => {
+                    const selectedPlayer = playersData.find(p => p.name === select.value);
+                    playerPreviews[index].src = selectedPlayer ? selectedPlayer.imageUrl : 'https://placehold.co/300x200/e2e8f0/e2e8f0?text=.';
+                    updateGenerateButtonState();
+                });
+            });
+            
+            playerSearches.forEach((search, index) => {
+                search.addEventListener('input', () => filterDropdown(search, playerSelects[index]));
+            });
+
+            function filterDropdown(searchInput, selectElement) {
+                const filter = searchInput.value.toLowerCase();
+                for (const option of selectElement.options) {
+                    const txtValue = option.textContent || option.innerText;
+                    option.style.display = (option.value === "" || txtValue.toLowerCase().includes(filter)) ? "" : "none";
+                }
+            }
+
+            // --- Button State Logic ---
+            function updateGenerateButtonState() {
+                let playersSelected = playerSelects[0].value && playerSelects[1].value;
+                if (doublesCheckbox.checked) {
+                    playersSelected = playersSelected && playerSelects[2].value && playerSelects[3].value;
+                }
+                generateBtn.disabled = !playersSelected;
+            }
+
+            // --- Image Generation Logic ---
+            generateBtn.addEventListener('click', generateImages);
+
+            async function generateImages() {
+                if (generateBtn.disabled) return;
+
+                imageGrid.innerHTML = '';
+                outputSection.classList.remove('hidden');
+                loadingSpinner.classList.remove('hidden');
+                generateBtn.disabled = true;
+                generateBtn.textContent = 'Generating...';
+                
+                try {
+                    await document.fonts.load('800 1em Poppins');
+                    await document.fonts.load('700 1em Chakra Petch');
+                    await document.fonts.load('bold 1em Inter');
+                } catch (err) { console.error('Font could not be loaded: ', err); }
+                
+                await new Promise(resolve => setTimeout(resolve, 50));
+
+                const color1 = hexInput1.value;
+                const color2 = hexInput2.value;
+                const headerText = headerTextInput.value.trim();
+                
+                for (const size of SIZES) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size.width;
+                    canvas.height = size.height;
+                    const ctx = canvas.getContext('2d');
+
+                    // Always draw diagonal background
+                    const offset = canvas.width * 0.1;
+                    ctx.fillStyle = color1;
+                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(canvas.width / 2 + offset, 0); ctx.lineTo(canvas.width / 2 - offset, canvas.height); ctx.lineTo(0, canvas.height); ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = color2;
+                    ctx.beginPath(); ctx.moveTo(canvas.width / 2 + offset, 0); ctx.lineTo(canvas.width, 0); ctx.lineTo(canvas.width, canvas.height); ctx.lineTo(canvas.width / 2 - offset, canvas.height); ctx.closePath(); ctx.fill();
+
+                    const p1Data = playersData.find(p => p.name === playerSelects[0].value);
+                    const p2Data = playersData.find(p => p.name === playerSelects[1].value);
+
+                    const doublesMode = doublesCheckbox.checked && playerSelects[2].value && playerSelects[3].value;
+
+                    if (uploadedLogo) {
+                        const logoPaddingPercent = 0.35;
+                        const maxLogoDim = Math.min(canvas.width, canvas.height) * logoPaddingPercent;
+                        const logoAR = uploadedLogo.width / uploadedLogo.height;
+                        let logoWidth, logoHeight;
+                        if (logoAR > 1) { logoWidth = maxLogoDim; logoHeight = logoWidth / logoAR; } else { logoHeight = maxLogoDim; logoWidth = logoHeight * logoAR; }
+                        const logoX = (canvas.width - logoWidth) / 2;
+                        const logoY = canvas.height * 0.125;
+                        ctx.drawImage(uploadedLogo, logoX, logoY, logoWidth, logoHeight);
+                    }
+
+                    if (doublesMode) {
+                        const p3Data = playersData.find(p => p.name === playerSelects[2].value);
+                        const p4Data = playersData.find(p => p.name === playerSelects[3].value);
+                        
+                        const [p1Img, p1Flag, p2Img, p2Flag, p3Img, p3Flag, p4Img, p4Flag] = await Promise.all([
+                            loadImage(p1Data.imageUrl), loadImage(p1Data.flagUrl),
+                            loadImage(p2Data.imageUrl), loadImage(p2Data.flagUrl),
+                            loadImage(p3Data.imageUrl), loadImage(p3Data.flagUrl),
+                            loadImage(p4Data.imageUrl), loadImage(p4Data.flagUrl)
+                        ]);
+                        
+                        const imgHeight = canvas.height * 0.85;
+                        const p1Width = imgHeight * (p1Img.width / p1Img.height);
+                        const p2Width = imgHeight * (p2Img.width / p2Img.height);
+                        const p3Height = imgHeight * 0.9;
+                        const p3Width = p3Height * (p3Img.width / p3Img.height);
+                        const p4Height = imgHeight * 0.9;
+                        const p4Width = p4Height * (p4Img.width / p4Img.height);
+                        const imgY = canvas.height - imgHeight;
+                        const p3Y = canvas.height - p3Height;
+                        const p4Y = canvas.height - p4Height;
+                        
+                        const inwardShiftDoubles = canvas.width * 0.18;
+                        const p1NewX = (0 - (canvas.width * 0.12) - (canvas.width * 0.015)) + inwardShiftDoubles;
+                        const p3NewX = ((canvas.width * 0.015) + (canvas.width * 0.08)) + inwardShiftDoubles - (canvas.width * 0.05);
+                        const p2NewX = ((canvas.width - p2Width) + (canvas.width * 0.12) + (canvas.width * 0.015)) - inwardShiftDoubles;
+                        const p4NewX = ((canvas.width - p4Width) - (canvas.width * 0.015) - (canvas.width * 0.08)) - inwardShiftDoubles + (canvas.width * 0.05);
+
+                        ctx.drawImage(p1Img, p1NewX, imgY, p1Width, imgHeight);
+                        ctx.drawImage(p3Img, p3NewX, p3Y, p3Width, p3Height);
+                        ctx.drawImage(p2Img, p2NewX, imgY, p2Width, imgHeight);
+                        ctx.drawImage(p4Img, p4NewX, p4Y, p4Width, p4Height);
+                        
+                        drawDoublesNames(ctx, p1Data.name, p1Flag, p3Data.name, p3Flag, 'left');
+                        drawDoublesNames(ctx, p2Data.name, p2Flag, p4Data.name, p4Flag, 'right');
+
+                    } else { // Singles mode
+                        const [playerImg1, playerFlag1, playerImg2, playerFlag2] = await Promise.all([
+                            loadImage(p1Data.imageUrl), loadImage(p1Data.flagUrl),
+                            loadImage(p2Data.imageUrl), loadImage(p2Data.flagUrl)
+                        ]);
+
+                        const imgHeight = canvas.height * 0.85;
+                        const img1Width = imgHeight * (playerImg1.width / playerImg1.height);
+                        const img2Width = imgHeight * (playerImg2.width / playerImg2.height);
+                        const imgY = canvas.height - imgHeight;
+                        
+                        const inwardShiftSingles = canvas.width * 0.12;
+                        const img1X = 0 + inwardShiftSingles;
+                        const img2X = (canvas.width - img2Width) - inwardShiftSingles;
+
+                        ctx.drawImage(playerImg1, img1X, imgY, img1Width, imgHeight);
+                        ctx.drawImage(playerImg2, img2X, imgY, img2Width, imgHeight);
+                        
+                        drawPlayerName(ctx, p1Data.name, playerFlag1, 'left');
+                        drawPlayerName(ctx, p2Data.name, playerFlag2, 'right');
+                    }
+
+                    if (headerText) {
+                        const fullMatchFontSize = Math.floor(canvas.height * 0.0828);
+                        ctx.font = `bold ${fullMatchFontSize}px "Inter"`;
+                        ctx.fillStyle = headerTextColorPicker.value;
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'top';
+                        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                        ctx.shadowBlur = 8;
+                        
+                        const words = headerText.split(' ');
+                        const xPos = canvas.width * 0.02;
+                        let yPos = canvas.height * 0.02;
+
+                        if (words.length > 2) {
+                            const line1 = words.slice(0, 2).join(' ');
+                            const line2 = words.slice(2).join(' ');
+                            ctx.fillText(line1, xPos, yPos);
+                            yPos += fullMatchFontSize * 1.2; // Move down for the next line
+                            ctx.fillText(line2, xPos, yPos);
+                        } else {
+                            ctx.fillText(headerText, xPos, yPos);
+                        }
+
+                        ctx.shadowColor = 'transparent';
+                        ctx.shadowBlur = 0;
+                    }
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                    createImageCard(dataUrl, `${size.width} x ${size.height}`);
+                }
+                
+                loadingSpinner.classList.add('hidden');
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate Image';
+            }
+            
+            function drawPlayerName(ctx, fullName, flagImg, alignment) {
+                const canvas = ctx.canvas;
+                const nameParts = fullName.split(' ');
+                const lastName = nameParts.pop().toUpperCase();
+                const firstName = nameParts.join(' ');
+                
+                const imgHeight = canvas.height * 0.85;
+                const lastNameSize = (imgHeight * 0.15) * 0.7;
+                const firstNameSize = (imgHeight * 0.1) * 0.7;
+                ctx.font = `800 ${lastNameSize}px Poppins`;
+                const lastNameMetrics = ctx.measureText(lastName);
+                ctx.font = `300 ${firstNameSize}px Inter`;
+                const firstNameMetrics = ctx.measureText(firstName);
+
+                const boxPadding = lastNameSize * 0.2;
+                const standardFlagHeight = canvas.height * 0.05;
+                const standardFlagWidth = standardFlagHeight * 1.5;
+                const flagPadding = boxPadding;
+
+                const boxWidth = Math.max(lastNameMetrics.width, firstNameMetrics.width) + (boxPadding * 2);
+                const boxHeight = lastNameSize + firstNameSize + (boxPadding * 2);
+                const totalWidth = boxWidth + flagPadding + standardFlagWidth;
+
+                const paddingFromEdge = canvas.width * 0.02;
+                let boxX;
+                if (alignment === 'left') {
+                    boxX = paddingFromEdge;
+                } else { // right
+                    boxX = canvas.width - totalWidth - paddingFromEdge;
+                }
+
+                const boxY = canvas.height - boxHeight - paddingFromEdge;
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = `300 ${firstNameSize}px Inter`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(firstName, boxX + boxPadding, boxY + boxPadding + firstNameSize / 2);
+                
+                ctx.fillStyle = '#06402b';
+                ctx.font = `800 ${lastNameSize}px Poppins`;
+                ctx.fillText(lastName, boxX + boxPadding, boxY + boxPadding + firstNameSize + lastNameSize / 2);
+
+                const flagX = boxX + boxWidth + flagPadding;
+                const flagY = boxY + (boxHeight - standardFlagHeight) / 2;
+                ctx.drawImage(flagImg, flagX, flagY, standardFlagWidth, standardFlagHeight);
+            }
+
+            function drawDoublesNames(ctx, name1, flag1, name2, flag2, alignment) {
+                const canvas = ctx.canvas;
+                const imgHeight = canvas.height * 0.85;
+                const lastName1 = name1.split(' ').pop().toUpperCase() + ' /'; // Top name
+                const lastName2 = name2.split(' ').pop().toUpperCase(); // Bottom name
+                
+                const lastName2Size = (imgHeight * 0.15) * 0.7;
+                const lastName1Size = (imgHeight * 0.1) * 0.7;
+
+                ctx.font = `300 ${lastName1Size}px Inter`;
+                const lastName1Metrics = ctx.measureText(lastName1);
+                ctx.font = `800 ${lastName2Size}px Inter`;
+                const lastName2Metrics = ctx.measureText(lastName2);
+
+                const boxPadding = lastName2Size * 0.2;
+                const flagPadding = boxPadding;
+
+                const standardFlagHeight = canvas.height * 0.05;
+                const standardFlagWidth = standardFlagHeight * 1.5;
+
+                const boxWidth = Math.max(lastName1Metrics.width, lastName2Metrics.width) + (boxPadding * 2);
+                const boxHeight = lastName1Size + lastName2Size + (boxPadding * 2);
+                const totalWidth = boxWidth + flagPadding + standardFlagWidth;
+                
+                const paddingFromEdge = canvas.width * 0.02;
+                const boxYPos = canvas.height - boxHeight - paddingFromEdge;
+                
+                let boxXPos;
+                if (alignment === 'left') {
+                    boxXPos = paddingFromEdge;
+                } else { // right
+                    boxXPos = canvas.width - totalWidth - paddingFromEdge;
+                }
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillRect(boxXPos, boxYPos, boxWidth, boxHeight);
+
+                ctx.fillStyle = '#000000';
+                ctx.font = `300 ${lastName1Size}px Inter`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(lastName1, boxXPos + boxPadding, boxYPos + boxPadding + lastName1Size / 2);
+
+                ctx.fillStyle = '#06402b';
+                ctx.font = `800 ${lastName2Size}px Inter`;
+                ctx.fillText(lastName2, boxXPos + boxPadding, boxYPos + boxPadding + lastName1Size + lastName2Size / 2);
+
+                // Draw flags
+                const flagX = boxXPos + boxWidth + flagPadding;
+                const flagPaddingBetween = boxHeight * 0.1;
+                const totalFlagHeight = (standardFlagHeight * 2) + flagPaddingBetween;
+                const flagY1 = boxYPos + (boxHeight - totalFlagHeight) / 2;
+                const flagY2 = flagY1 + standardFlagHeight + flagPaddingBetween;
+
+                ctx.drawImage(flag1, flagX, flagY1, standardFlagWidth, standardFlagHeight);
+                ctx.drawImage(flag2, flagX, flagY2, standardFlagWidth, standardFlagHeight);
+            }
+
+            function loadImage(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = () => resolve(img);
+                    img.onerror = (err) => {
+                        console.error(`Failed to load image: ${src}`, err);
+                        // Resolve with a placeholder image on error
+                        const placeholder = new Image();
+                        placeholder.src = 'https://placehold.co/400x600/cccccc/ffffff?text=Error';
+                        placeholder.onload = () => resolve(placeholder);
+                    };
+                    img.src = src.startsWith('http') ? `${CORS_PROXY_URL}${src}` : src;
+                });
+            }
+
+            function createImageCard(dataUrl, dimensionText) {
+                imageGrid.innerHTML = ''; // Clear previous image
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 p-3 rounded-lg shadow-sm border flex flex-col items-center';
+                const img = document.createElement('img');
+                img.src = dataUrl;
+                img.className = 'w-full h-auto rounded-md object-contain mb-3 bg-white';
+                img.style.aspectRatio = '16/9';
+                
+                const downloadLink = document.createElement('a');
+                downloadLink.href = dataUrl;
+                downloadLink.download = `tennis-graphic-${Date.now()}.jpg`;
+                downloadLink.textContent = `Download JPG (${dimensionText})`;
+                downloadLink.className = 'mt-2 inline-block bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm';
+                
+                card.appendChild(img);
+                card.appendChild(downloadLink);
+                imageGrid.appendChild(card);
+            }
+
+            function syncColorInputs(picker, hex) {
+                 picker.addEventListener('input', (e) => hex.value = e.target.value);
+                 hex.addEventListener('input', (e) => {
+                     if (/^#[0-9A-F]{6}$/i.test(e.target.value)) { picker.value = e.target.value; }
+                 });
+            }
+            syncColorInputs(colorPicker1, hexInput1);
+            syncColorInputs(colorPicker2, hexInput2);
+
+            function setupSwatches(swatchGroup, picker, hex) {
+                swatchGroup.forEach(swatch => {
+                    swatch.addEventListener('click', () => {
+                        const color = swatch.dataset.color;
+                        picker.value = color;
+                        hex.value = color;
+                    });
+                });
+            }
+            setupSwatches(swatches1, colorPicker1, hexInput1);
+            setupSwatches(swatches2, colorPicker2, hexInput2);
+
+            // --- Initial Setup ---
+            fetchAllPlayers();
+            updateGenerateButtonState();
+        });
+    </script>
+</body>
+</html>
+
