@@ -639,16 +639,17 @@
                 const standardFlagWidth = standardFlagHeight * 1.5;
                 const flagPadding = boxPadding;
 
-                const boxWidth = Math.max(lastNameMetrics.width, firstNameMetrics.width) + (boxPadding * 2);
-                const boxHeight = lastNameSize + firstNameSize + (boxPadding * 2);
-                const totalWidth = boxWidth + flagPadding + standardFlagWidth;
+                const textWidth = Math.max(lastNameMetrics.width, firstNameMetrics.width);
+                const boxWidth = textWidth + flagPadding + standardFlagWidth + (boxPadding * 2);
 
+                const boxHeight = lastNameSize + firstNameSize + (boxPadding * 2);
+                
                 const paddingFromEdge = canvas.width * 0.02;
                 let boxX;
                 if (alignment === 'left') {
                     boxX = paddingFromEdge;
                 } else { // right
-                    boxX = canvas.width - totalWidth - paddingFromEdge;
+                    boxX = canvas.width - boxWidth - paddingFromEdge;
                 }
 
                 const boxY = canvas.height - boxHeight - paddingFromEdge;
@@ -666,8 +667,8 @@
                 ctx.font = `800 ${lastNameSize}px Poppins`;
                 ctx.fillText(lastName, boxX + boxPadding, boxY + boxPadding + firstNameSize + lastNameSize / 2);
 
-                const flagX = boxX + boxWidth + flagPadding;
-                const flagY = boxY + (boxHeight - standardFlagHeight) / 2;
+                const flagX = boxX + boxWidth - standardFlagWidth - boxPadding;
+                const flagY = (boxY + boxPadding + firstNameSize + (lastNameSize / 2)) - (standardFlagHeight / 2);
                 ctx.drawImage(flagImg, flagX, flagY, standardFlagWidth, standardFlagHeight);
             }
 
@@ -691,9 +692,9 @@
                 const standardFlagHeight = canvas.height * 0.05;
                 const standardFlagWidth = standardFlagHeight * 1.5;
 
-                const boxWidth = Math.max(lastName1Metrics.width, lastName2Metrics.width) + (boxPadding * 2);
+                const textWidth = Math.max(lastName1Metrics.width, lastName2Metrics.width);
+                const boxWidth = textWidth + flagPadding + standardFlagWidth + (boxPadding * 2);
                 const boxHeight = lastName1Size + lastName2Size + (boxPadding * 2);
-                const totalWidth = boxWidth + flagPadding + standardFlagWidth;
                 
                 const paddingFromEdge = canvas.width * 0.02;
                 const boxYPos = canvas.height - boxHeight - paddingFromEdge;
@@ -702,7 +703,7 @@
                 if (alignment === 'left') {
                     boxXPos = paddingFromEdge;
                 } else { // right
-                    boxXPos = canvas.width - totalWidth - paddingFromEdge;
+                    boxXPos = canvas.width - boxWidth - paddingFromEdge;
                 }
 
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
@@ -719,7 +720,7 @@
                 ctx.fillText(lastName2, boxXPos + boxPadding, boxYPos + boxPadding + lastName1Size + lastName2Size / 2);
 
                 // Draw flags
-                const flagX = boxXPos + boxWidth + flagPadding;
+                const flagX = boxXPos + boxWidth - standardFlagWidth - boxPadding;
                 const flagPaddingBetween = boxHeight * 0.1;
                 const totalFlagHeight = (standardFlagHeight * 2) + flagPaddingBetween;
                 const flagY1 = boxYPos + (boxHeight - totalFlagHeight) / 2;
@@ -793,4 +794,5 @@
     </script>
 </body>
 </html>
+
 
